@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FPV-конфигуратор</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111;
+      --card: #0c0c0c;
+      --field: #171717;
+      --line: #303030;
+      --text: #f4f4f4;
+      --muted: #858585;
+      --green: #86e3b3;
+      --yellow: #ffd27a;
+      --red: #ff8989;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 13px/1.45 Arial, sans-serif;
+    }
+
+    main {
+      width: min(100% - 28px, 720px);
+      margin: 0 auto;
+      padding: 32px 0 48px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+    }
+
+    .intro {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .components {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .card, .build-card {
+      min-width: 0;
+      padding: 12px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 3px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .tag {
+      flex: 0 0 auto;
+      padding: 2px 7px;
+      border: 1px solid #444;
+      border-radius: 999px;
+      color: #ccc;
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+
+    .description {
+      min-height: 16px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 4px;
+      color: #aaa;
+      font-size: 10px;
+    }
+
+    select {
+      width: 100%;
+      padding: 9px 8px;
+      border: 1px solid #303030;
+      border-radius: 6px;
+      background: var(--field);
+      color: var(--text);
+      font: inherit;
+    }
+
+    .price {
+      margin-top: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .build-card { margin-top: 8px; }
+
+    .build-title {
+      margin: 0 0 9px;
+      font-size: 15px;
+    }
+
+    .total {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #111;
+    }
+
+    .total small {
+      display: block;
+      color: #aaa;
+      font-size: 10px;
+    }
+
+    .total strong {
+      font-size: 24px;
+      letter-spacing: .3px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .metric {
+      padding: 8px;
+      border: 1px solid #292929;
+      border-radius: 7px;
+      background: #161616;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 2px;
+      font-size: 13px;
+    }
+
+    .compatibility {
+      padding: 8px;
+      border: 1px solid #303030;
+      border-radius: 7px;
+      color: #ccc;
+      font-size: 11px;
+    }
+
+    .compatibility.ok { color: var(--green); }
+    .compatibility.warn { color: var(--yellow); }
+    .compatibility.bad { color: var(--red); }
+
+    .subheading {
+      margin: 12px 0 5px;
+      color: #aaa;
+      font-size: 10px;
+    }
+
+    .checks {
+      display: grid;
+      gap: 4px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: #bbb;
+      font-size: 10px;
+    }
+
+    .checks .ok { color: var(--green); }
+    .checks .warn { color: var(--yellow); }
+    .checks .bad { color: var(--red); }
+    .checks .muted { color: var(--muted); }
+
+    .parts-list {
+      margin: 0;
+      padding-left: 17px;
+      color: #bbb;
+      font-size: 10px;
+    }
+
+    .parts-list li { margin: 3px 0; }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 8px 10px;
+      border: 1px solid #333;
+      border-radius: 7px;
+      background: #191919;
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: #888; }
+
+    button.primary {
+      border-color: var(--green);
+      background: var(--green);
+      color: #101510;
+      font-weight: 700;
+    }
+
+    @media (max-width: 520px) {
+      main {
+        width: min(100% - 16px, 420px);
+        padding-top: 24px;
+      }
+
+      .components { grid-template-columns: 1fr; }
+      .card { padding: 11px; }
+    }
+
+    @media print {
+      body { background: white; color: black; }
+      main { width: 100%; padding: 0; }
+      .card, .build-card, .metric, .total, .compatibility {
+        background: white;
+        color: black;
+        border-color: #aaa;
+      }
+      .buttons, select { display: none; }
+      .components { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Собери свой FPV-дрон</h1>
+  <p class="intro">
+    Подбирай комплектующие, проверяй совместимость и узнавай примерную стоимость
+    и характеристики будущей сборки.
+  </p>
+
+  <section class="components" id="components"></section>
+
+  <section class="build-card">
+    <h2 class="build-title">Твоя сборка</h2>
+
+    <div class="total">
+      <small>Итого</small>
+      <strong id="totalPrice">0 ₽</strong>
+    </div>
+
+    <div class="metrics">
+      <div class="metric"><span>Вес</span><strong id="weight">—</strong></div>
+      <div class="metric"><span>Время полёта</span><strong id="flight">—</strong></div>
+      <div class="metric"><span>Размер рамы</span><strong id="size">—</strong></div>
+      <div class="metric"><span>Напряжение</span><strong id="voltage">—</strong></div>
+      <div class="metric"><span>Тяговооружённость</span><strong id="twr">—</strong></div>
+      <div class="metric"><span>Общая тяга</span><strong id="thrust">—</strong></div>
+    </div>
+
+    <div id="compatibility" class="compatibility">Выбери комплектующие для проверки.</div>
+
+    <div class="subheading">Проверка совместимости</div>
+    <ul class="checks" id="checks"></ul>
+
+    <div class="subheading">Выбранные комплектующие</div>
+    <ul class="parts-list" id="partsList"></ul>
+
+    <div class="buttons">
+      <button class="primary" id="save">Сохранить сборку</button>
+      <button id="load">Восстановить</button>
+      <button id="export">Экспорт списка</button>
+      <button onclick="window.print()">Печать спецификации</button>
+      <button id="reset">Сбросить</button>
+    </div>
+  </section>
+</main>
+
+<script>
+  const catalog = {
+    frame: {
+      title: "Тип рамы",
+      description: "Размер и конструкция рамы",
+      tag: "frame",
+      items: [
+        { id:"frame-freestyle", name:"Freestyle 5″", price:4200, weight:120, wheelbase:225, mount:30.5, propSize:5 },
+        { id:"frame-tbs", name:"TBS Source One V5 5″", price:4200, weight:125, wheelbase:225, mount:30.5, propSize:5 },
+        { id:"frame-7", name:"Long Range 7″", price:6800, weight:185, wheelbase:295, mount:30.5, propSize:7 },
+        { id:"frame-cine", name:"Cinewhoop 3.5″", price:5200, weight:145, wheelbase:160, mount:20, propSize:3.5 }
+      ]
+    },
+    topPlate: {
+      title: "Верхняя пластина",
+      description: "Крышка и защита рамы",
+      tag: "frame",
+      items: [
+        { id:"top-standard", name:"Стандартная пластина", price:0, weight:15 },
+        { id:"top-camera", name:"Пластина с креплением камеры", price:700, weight:20 },
+        { id:"top-longrange", name:"Пластина Long Range", price:1100, weight:25 }
+      ]
+    },
+    motors: {
+      title: "Моторы",
+      description: "Комплект из 4 моторов",
+      tag: "motors",
+      items: [
+        { id:"mot-2207-1750", name:"2207 1750KV", price:7800, weight:120, thrust:7200, mount:30.5, cellsMin:4, cellsMax:6 },
+        { id:"mot-2207-1950", name:"2207 1950KV", price:7600, weight:120, thrust:6800, mount:30.5, cellsMin:4, cellsMax:6 },
+        { id:"mot-2306-1700", name:"2306 1700KV", price:8200, weight:124, thrust:7000, mount:30.5, cellsMin:4, cellsMax:6 },
+        { id:"mot-2806-1300", name:"2806.5 1300KV", price:9800, weight:180, thrust:8800, mount:30.5, cellsMin:4, cellsMax:6 },
+        { id:"mot-1404-3800", name:"1404 3800KV", price:6500, weight:56, thrust:2400, mount:20, cellsMin:3, cellsMax:4 }
+      ]
+    },
+    esc: {
+      title: "Регулятор скорости",
+      description: "ESC и поддерживаемое напряжение",
+      tag: "ESC",
+      items: [
+        { id:"esc-45", name:"4-в-1 ESC 45A", price:4800, weight:18, mount:30.5, protocol:"DShot", cellsMin:3, cellsMax:6 },
+        { id:"esc-55", name:"4-в-1 ESC 55A", price:6200, weight:22, mount:30.5, protocol:"DShot", cellsMin:3, cellsMax:6 },
+        { id:"esc-60", name:"4-в-1 ESC 60A", price:7600, weight:25, mount:30.5, protocol:"DShot", cellsMin:3, cellsMax:8 },
+        { id:"esc-mini", name:"Mini ESC 35A", price:3900, weight:14, mount:20, protocol:"DShot", cellsMin:2, cellsMax:4 }
+      ]
+    },
+    fc: {
+      title: "Полётный контроллер",
+      description: "FC и протокол связи с ESC",
+      tag: "FC",
+      items: [
+        { id:"fc-speedy", name:"SpeedyBee F405 V4", price:6900, weight:12, mount:30.5, protocol:"DShot" },
+        { id:"fc-f7", name:"F7 Flight Controller", price:8500, weight:13, mount:30.5, protocol:"DShot" },
+        { id:"fc-h7", name:"H7 Flight Controller", price:11200, weight:15, mount:30.5, protocol:"DShot" },
+        { id:"fc-mini", name:"Mini F405 20×20", price:5900, weight:9, mount:20, protocol:"DShot" }
+      ]
+    },
+    camera: {
+      title: "FPV-камера",
+      description: "Камера для видеосистемы",
+      tag: "camera",
+      items: [
+        { id:"cam-ratel", name:"Foxeer Ratel Mini", price:3200, weight:8, video:"analog" },
+        { id:"cam-caddx", name:"Caddx Ratel 2", price:3900, weight:9, video:"analog" },
+        { id:"cam-wasp", name:"Цифровая камера Wasp", price:9800, weight:12, video:"digital" },
+        { id:"cam-o3", name:"Камера DJI O3", price:0, weight:0, video:"digital" }
+      ]
+    },
+    vtx: {
+      title: "Видеопередатчик",
+      description: "Передача видео с дрона",
+      tag: "VTX",
+      items: [
+        { id:"vtx-rush", name:"Rush Tank Solo 5.8 ГГц", price:5600, weight:8, video:"analog" },
+        { id:"vtx-400", name:"Аналоговый VTX 400 мВт", price:3200, weight:7, video:"analog" },
+        { id:"vtx-walksnail", name:"Walksnail Avatar VTX", price:16500, weight:23, video:"digital" },
+        { id:"vtx-o3", name:"DJI O3 Air Unit", price:0, weight:36, video:"digital" }
+      ]
+    },
+    antenna: {
+      title: "Антенна",
+      description: "Антенна видеопередатчика",
+      tag: "antenna",
+      items: [
+        { id:"ant-lollipop", name:"Lollipop 5.8 ГГц RHCP", price:1200, weight:5 },
+        { id:"ant-mini", name:"Мини-антенна 5.8 ГГц", price:850, weight:3 },
+        { id:"ant-long", name:"Long Range 5.8 ГГц", price:1600, weight:8 }
+      ]
+    },
+    goggles: {
+      title: "FPV-очки",
+      description: "Очки должны подходить к видеосистеме",
+      tag: "goggles",
+      items: [
+        { id:"gog-analog", name:"Аналоговые FPV-очки", price:18000, weight:380, video:"analog" },
+        { id:"gog-dji", name:"DJI Goggles", price:52000, weight:400, video:"digital" },
+        { id:"gog-walksnail", name:"Walksnail Goggles", price:46000, weight:390, video:"digital" }
+      ]
+    },
+    radio: {
+      title: "Аппаратура управления",
+      description: "Передатчик радиоуправления",
+      tag: "radio",
+      items: [
+        { id:"radio-elrs", name:"ExpressLRS 2.4 GHz", price:14500, weight:500, link:"ELRS 2.4GHz" },
+        { id:"radio-crossfire", name:"TBS Crossfire", price:22000, weight:500, link:"Crossfire" },
+        { id:"radio-elrs900", name:"ExpressLRS 900 MHz", price:16500, weight:500, link:"ELRS 900MHz" }
+      ]
+    },
+    receiver: {
+      title: "Приёмник",
+      description: "Приёмник радиосигнала",
+      tag: "RX",
+      items: [
+        { id:"rx-nano", name:"ExpressLRS 2.4 GHz Nano", price:2800, weight:2, link:"ELRS 2.4GHz" },
+        { id:"rx-crossfire", name:"TBS Crossfire Nano RX", price:3900, weight:4, link:"Crossfire" },
+        { id:"rx-900", name:"ExpressLRS 900 MHz", price:3200, weight:3, link:"ELRS 900MHz" }
+      ]
+    },
+    gps: {
+      title: "GPS-модуль",
+      description: "Навигация и возврат домой",
+      tag: "GPS",
+      items: [
+        { id:"gps-bee", name:"Bee GPS", price:0, weight:8 },
+        { id:"gps-m10", name:"Модуль GPS M10", price:3200, weight:10 },
+        { id:"gps-compass", name:"GPS M10 с компасом", price:4500, weight:14 }
+      ]
+    },
+    battery: {
+      title: "Аккумулятор",
+      description: "Ёмкость, число ячеек и вес",
+      tag: "battery",
+      items: [
+        { id:"bat-4s1500", name:"4S 1500 мА·ч", price:3200, weight:190, cells:4, capacity:1500 },
+        { id:"bat-6s1300", name:"6S 1300 мА·ч", price:3900, weight:220, cells:6, capacity:1300 },
+        { id:"bat-6s1550", name:"6S 1550 мА·ч", price:4500, weight:245, cells:6, capacity:1550 },
+        { id:"bat-6s2200", name:"6S 2200 мА·ч", price:6200, weight:330, cells:6, capacity:2200 },
+        { id:"bat-4s850", name:"4S 850 мА·ч", price:2300, weight:105, cells:4, capacity:850 }
+      ]
+    },
+    propellers: {
+      title: "Пропеллеры",
+      description: "Размер пропеллеров",
+      tag: "props",
+      items: [
+        { id:"prop-gemfan", name:"Gemfan 51433", price:650, weight:20, size:5 },
+        { id:"prop-51466", name:"Gemfan 51466", price:700, weight:22, size:5 },
+        { id:"prop-7", name:"Пропеллеры 7″", price:900, weight:35, size:7 },
+        { id:"prop-35", name:"Пропеллеры 3.5″", price:600, weight:16, size:3.5 }
+      ]
+    },
+    accessories: {
+      title: "Аксессуары",
+      description: "Дополнительные элементы",
+      tag: "extra",
+      items: [
+        { id:"acc-standard", name:"Стандартный комплект", price:500, weight:10 },
+        { id:"acc-buzzer", name:"Пищалка с автономным питанием", price:900, weight:6 },
+        { id:"acc-led", name:"LED-подсветка", price:700, weight:8 },
+        { id:"acc-strap", name:"Ремешок аккумулятора", price:350, weight:12 }
+      ]
+    }
+  };
+
+  const root = document.getElementById("components");
+
+  for (const [key, category] of Object.entries(catalog)) {
+    const card = document.createElement("article");
+    card.className = "card";
+
+    const head = document.createElement("div");
+    head.className = "card-head";
+    head.innerHTML = `<span class="card-title">${category.title}</span>
+                      <span class="tag">${category.tag}</span>`;
+
+    const description = document.createElement("div");
+    description.className = "description";
+    description.textContent = category.description;
+
+    const label = document.createElement("label");
+    label.htmlFor = `select-${key}`;
+    label.textContent = "Модель";
+
+    const select = document.createElement("select");
+    select.id = `select-${key}`;
+    select.dataset.category = key;
+    select.add(new Option("Не выбрано", ""));
+
+    category.items.forEach(item => {
+      // Цена намеренно не включена в название пункта.
+      select.add(new Option(item.name, item.id));
+    });
+
+    const price = document.createElement("div");
+    price.className = "price";
+    price.id = `price-${key}`;
+    price.textContent = "0 ₽";
+
+    select.addEventListener("change", update);
+    card.append(head, description, label, select, price);
+    root.appendChild(card);
+  }
+
+  function getPart(key) {
+    const id = document.getElementById(`select-${key}`).value;
+    return catalog[key].items.find(item => item.id === id) || null;
+  }
+
+  function rubles(value) {
+    return `${Math.round(value).toLocaleString("ru-RU")} ₽`;
+  }
+
+  function compatibilityCheck(title, a, b, test, errorText) {
+    if (!a || !b) {
+      return `<li class="muted">${title}: выберите оба компонента</li>`;
+    }
+    return test(a, b)
+      ? `<li class="ok">✓ ${title}: совместимо</li>`
+      : `<li class="bad">⚠ ${title}: ${errorText}</li>`;
+  }
+
+  function update() {
+    const selected = [];
+
+    for (const [key, category] of Object.entries(catalog)) {
+      const part = getPart(key);
+      const priceElement = document.getElementById(`price-${key}`);
+
+      priceElement.textContent = part ? rubles(part.price) : "0 ₽";
+      if (part) selected.push({ key, title: category.title, part });
+    }
+
+    const totalPrice = selected.reduce((sum, item) => sum + item.part.price, 0);
+    const totalWeight = selected.reduce((sum, item) => sum + (item.part.weight || 0), 0);
+    const battery = getPart("battery");
+    const frame = getPart("frame");
+    const motors = getPart("motors");
+
+    document.getElementById("totalPrice").textContent = rubles(totalPrice);
+    document.getElementById("weight").textContent =
+      totalWeight ? `${totalWeight} г` : "—";
+    document.getElementById("size").textContent =
+      frame ? `${frame.wheelbase} мм · ${frame.propSize}″` : "—";
+    document.getElementById("voltage").textContent = battery
+      ? `${(battery.cells * 3.7).toFixed(1)} В ном. / ${(battery.cells * 4.2).toFixed(1)} В макс.`
+      : "—";
+
+    const twr = motors && totalWeight ? motors.thrust / totalWeight : 0;
+    document.getElementById("twr").textContent = twr ? `${twr.toFixed(1)}:1` : "—";
+    document.getElementById("thrust").textContent =
+      motors ? `${motors.thrust.toLocaleString("ru-RU")} г` : "—";
+
+    // Грубая оценка: 80% ёмкости батареи, средний ток 25C.
+    const flightMinutes = battery ? (0.8 * 60 / 25) : 0;
+    document.getElementById("flight").textContent =
+      battery ? `≈ ${flightMinutes.toFixed(1)} мин` : "—";
+
+    const checks = [
+      compatibilityCheck("Рама и моторы", frame, motors,
+        (a, b) => a.mount === b.mount, "размер крепления не совпадает"),
+      compatibilityCheck("Рама и ESC", frame, getPart("esc"),
+        (a, b) => a.mount === b.mount, "размер крепления не совпадает"),
+      compatibilityCheck("Рама и FC", frame, getPart("fc"),
+        (a, b) => a.mount === b.mount, "размер крепления не совпадает"),
+      compatibilityCheck("Протокол FC и ESC", getPart("fc"), getPart("esc"),
+        (a, b) => a.protocol === b.protocol, "протоколы не совпадают"),
+      compatibilityCheck("Камера и VTX", getPart("camera"), getPart("vtx"),
+        (a, b) => a.video === b.video, "видеосистемы не совпадают"),
+      compatibilityCheck("VTX и очки", getPart("vtx"), getPart("goggles"),
+        (a, b) => a.video === b.video, "видеосистемы не совпадают"),
+      compatibilityCheck("Аппаратура и приёмник", getPart("radio"), getPart("receiver"),
+        (a, b) => a.link === b.link, "протоколы радиосвязи не совпадают")
+    ];
+
+    const esc = getPart("esc");
+    if (battery && esc) {
+      const ok = battery.cells >= esc.cellsMin && battery.cells <= esc.cellsMax;
+      checks.push(`<li class="${ok ? "ok" : "bad"}">${ok ? "✓" : "⚠"} Аккумулятор и ESC: ${
+        ok ? "напряжение совместимо" : `ESC поддерживает ${esc.cellsMin}–${esc.cellsMax}S`
+      }</li>`);
+    } else {
+      checks.push('<li class="muted">Аккумулятор и ESC: выберите оба компонента</li>');
+    }
+
+    const props = getPart("propellers");
+    if (frame && props) {
+      const ok = frame.propSize === props.size;
+      checks.push(`<li class="${ok ? "ok" : "warn"}">${ok ? "✓" : "⚠"} Рама и пропеллеры: ${
+        ok ? "размеры совпадают" : "проверьте, подходят ли пропеллеры к раме"
+      }</li>`);
+    } else {
+      checks.push('<li class="muted">Рама и пропеллеры: выберите оба компонента</li>');
+    }
+
+    document.getElementById("checks").innerHTML = checks.join("");
+
+    const hasProblem = checks.some(line => line.includes('class="bad"'));
+    const hasWarning = checks.some(line => line.includes('class="warn"'));
+    const status = document.getElementById("compatibility");
+
+    if (hasProblem) {
+      status.textContent = "Есть несовместимые компоненты — проверь предупреждения ниже.";
+      status.className = "compatibility bad";
+    } else if (hasWarning) {
+      status.textContent = "Есть замечания — проверь размеры комплектующих.";
+      status.className = "compatibility warn";
+    } else {
+      status.textContent = selected.length
+        ? "Критичных проблем совместимости не обнаружено."
+        : "Выбери комплектующие для проверки.";
+      status.className = "compatibility " + (selected.length ? "ok" : "");
+    }
+
+    document.getElementById("partsList").innerHTML = selected.length
+      ? selected.map(({ title, part }) =>
+          `<li>${title}: ${part.name} — ${rubles(part.price)}</li>`
+        ).join("")
+      : "<li>Комплектующие не выбраны</li>";
+  }
+
+  function getConfiguration() {
+    return Object.fromEntries(
+      Object.keys(catalog).map(key => [key, getPart(key)?.id || ""])
+    );
+  }
+
+  function setConfiguration(configuration) {
+    for (const key of Object.keys(catalog)) {
+      document.getElementById(`select-${key}`).value = configuration[key] || "";
+    }
+    update();
+  }
+
+  document.getElementById("save").addEventListener("click", () => {
+    localStorage.setItem("fpv-config", JSON.stringify(getConfiguration()));
+    alert("Сборка сохранена в этом браузере.");
+  });
+
+  document.getElementById("load").addEventListener("click", () => {
+    const saved = localStorage.getItem("fpv-config");
+    if (!saved) return alert("Сохранённая сборка не найдена.");
+
+    try {
+      setConfiguration(JSON.parse(saved));
+    } catch {
+      alert("Не удалось восстановить сборку.");
+    }
+  });
+
+  document.getElementById("reset").addEventListener("click", () => {
+    setConfiguration({});
+  });
+
+  document.getElementById("export").addEventListener("click", () => {
+    const selected = Object.entries(catalog)
+      .map(([key, category]) => ({ category, part: getPart(key) }))
+      .filter(item => item.part);
+
+    const total = selected.reduce((sum, item) => sum + item.part.price, 0);
+    const text = [
+      "Спецификация FPV-дрона",
+      "",
+      ...selected.map(item =>
+        `${item.category.title}: ${item.part.name} — ${rubles(item.part.price)}`
+      ),
+      "",
+      `Итого: ${rubles(total)}`
+    ].join("\n");
+
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "fpv-specification.txt";
+    link.click();
+    URL.revokeObjectURL(link.href);
+  });
+
+  update();
+</script>
+</body>
+</html>
